@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1526991048532.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "0|3|3|0|\n",
+    "hash" : "2299439276",
+    "id" : "C2AB3DFC",
+    "lastKnownWriteTime" : 1527012985,
+    "last_content_update" : 1527013022418,
+    "path" : "C:/Users/ahallam/data/r/google_media_sim/google_media_sim.Rmd",
+    "project_path" : "google_media_sim.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "289,0",
+        "marks" : "<:218,12\n>:218,12",
+        "scrollLine" : "277",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

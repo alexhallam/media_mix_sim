@@ -1,0 +1,3 @@
+"0","clean_data %>% "
+"0","  gather(key = media_type, value = value, -date,-price,-sales,-e) %>% "
+"0","  ggplot(aes(date, value, color = media_type)) + geom_line() + theme_ipsum()"

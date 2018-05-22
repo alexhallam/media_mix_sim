@@ -1,0 +1,8 @@
+"0","clean_data %>% "
+"0","  select(sales, m_tv, m_rd, m_online, e, price) %>% "
+"0","  summarise_all(var) %>% "
+"0","  transmute(var_tv = m_tv / sales, "
+"0","         var_rd =   m_rd / sales, "
+"0","         var_online = m_online / sales,"
+"0","         var_noise = e / sales,"
+"0","         price = price / sales)"

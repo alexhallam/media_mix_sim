@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1527010830863.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "300013411",
+    "id" : "683A0EE1",
+    "lastKnownWriteTime" : 1527012987,
+    "last_content_update" : 1527012987777,
+    "path" : "C:/Users/ahallam/data/r/google_media_sim/model.stan",
+    "project_path" : "model.stan",
+    "properties" : {
+        "cursorPosition" : "12,0",
+        "scrollLine" : "9"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "stan"
+}

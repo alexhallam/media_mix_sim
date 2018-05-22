@@ -1,0 +1,4 @@
+"0","library(hrbrthemes)"
+"0","# some plots of the data. see if it matches the paper okay"
+"0","clean_data %>% "
+"0","  ggplot(aes(date, sales)) + geom_line() + theme_ipsum()"
