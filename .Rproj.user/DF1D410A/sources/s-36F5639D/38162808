@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1527016920725.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "38162808",
+    "lastKnownWriteTime" : 1527017107,
+    "last_content_update" : 1527017107831,
+    "path" : "C:/Users/ahallam/data/r/google_media_sim/simple_example.R",
+    "project_path" : "simple_example.R",
+    "properties" : {
+        "cursorPosition" : "19,76",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
