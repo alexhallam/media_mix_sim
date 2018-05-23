@@ -58,12 +58,12 @@ transformed parameters {
     for (nn in 1:N) {
       for (media in 1 : num_media) {
         for (lag in 1 : max_lag) {
-          lag_weights[lag] <- pow(retain_rate[media], (lag - 1 - delay[media]) ^ 2);
+          lag_weights[lag] = pow(retain_rate[media], (lag - 1 - delay[media]) ^ 2);
         }
-      cum_effect <- Adstock(X_media[nn, media], lag_weights);
-      cum_effects_hill[nn, media] <- Hill(cum_effect, ec[media], slope[media]);
+      cum_effect = Adstock(X_media[nn, media], lag_weights);
+      cum_effects_hill[nn, media] = Hill(cum_effect, ec[media], slope[media]);
       }
-      mu[nn] <- tau +
+      mu[nn] = tau +
       dot_product(cum_effects_hill[nn], beta_medias) +
       dot_product(X_ctrl[nn], gamma_ctrl);
       }

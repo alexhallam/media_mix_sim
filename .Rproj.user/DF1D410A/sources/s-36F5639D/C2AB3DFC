@@ -5,7 +5,7 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "0|3|3|0|\n",
-    "hash" : "2543708798",
+    "hash" : "0",
     "id" : "C2AB3DFC",
     "lastKnownWriteTime" : 1527017439,
     "last_content_update" : 1527017439038,
@@ -13,9 +13,9 @@
     "project_path" : "google_media_sim.Rmd",
     "properties" : {
         "chunk_output_type" : "inline",
-        "cursorPosition" : "307,18",
+        "cursorPosition" : "302,0",
         "marks" : "<:218,12\n>:218,12",
-        "scrollLine" : "298",
+        "scrollLine" : "287",
         "tempName" : "Untitled1"
     },
     "relative_order" : 1,
