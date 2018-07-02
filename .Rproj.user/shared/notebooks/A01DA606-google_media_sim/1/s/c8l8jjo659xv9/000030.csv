@@ -1,2 +1,0 @@
-"0","clean_data %>% "
-"0","  ggplot(aes(y = price, x = date)) + geom_line() + theme_ipsum()"

@@ -5,6 +5,8 @@ output: html_notebook
 
 ```{r media data}
 library(tidyverse)
+library(corrr)
+library(hrbrthemes)
 # -------------------------------------
 # Generate Media Data
 # Equation: y=a*sin(b*t)+c.unif*amp
@@ -13,9 +15,9 @@ set.seed(1)
 n <- 104 # number of data points
 t <- seq(0,4*pi,length.out = n)
 b <- 8 # essentially the number of pillars in a year
-c.norm1 <- rnorm(n,0,1)
-c.norm2 <- rnorm(n,0,0.5)
-c.norm3 <- rnorm(n,0,0.5)
+c.norm1 <- rnorm(n,0,.5)
+c.norm2 <- rnorm(n,0,0.25)
+c.norm3 <- rnorm(n,0,0.25)
 amp <- 2
 # generate data and calculate "y"
 media_tv <- 1*sin(b*t)+c.norm1*amp # Gaussian/normal error
@@ -23,15 +25,18 @@ media_radio <- 1*sin(b*t)+c.norm2*amp # Gaussian/normal error
 media_online <- 1*sin(b*t)+c.norm3*amp # Gaussian/normal error
 week <- seq(1:104)
 
-lego1 <- as.data.frame(list(week = week,media_tv = media_tv,
-                   media_radio = media_radio,
-                   media_online = media_online)) 
+sim_df <- as.data.frame(list(week = week,
+                            media_tv = media_tv,
+                            media_radio = media_radio,
+                            media_online = media_online)) %>% 
+  mutate_at(vars(media_tv, media_radio,media_online), percent_rank)
 
-lego1 %>% 
+sim_df %>% 
   ggplot(aes(x = week)) +
   geom_line(aes(y = media_tv, color = "tv")) +
   geom_line(aes(y = media_radio, color = "radio")) +
-  geom_line(aes(y = media_online, color = "online"))
+  geom_line(aes(y = media_online, color = "online")) +
+  theme_ipsum()
 ```
 
 ```{r price data}
@@ -40,15 +45,17 @@ lego1 %>%
 # Equation: y=ARIMA(1,1,0) with AR = 0.50
 # Interpretation: Price has increased by 3 dollars in the last year
 # -----------------------------------------------------------------------------
-e <- rnorm(n,0,0.005) # normal errors
-price <- arima.sim(n=n-1,model=list(ar=.5,order=c(1,1,0)), #arima price
-                   n.start=1,innov= 0.005 + e)
-
+price <- arima.sim(n = n, list(ar = c(0.8897, -0.4858), ma = c(0.279, 0.2488)), sd = sqrt(0.125))
+mean(price)
 sd(price)
-price <- as.numeric(scale(price))
-lego2 <- add_column(lego1, price)
+hist(price)
+plot(price)
 
-lego2 %>% 
+#price <- as.numeric(scale(price))
+sim_df <- add_column(sim_df, price) %>% 
+  mutate_at(vars(price), percent_rank)
+
+sim_df %>% 
   gather(key = vartype, value = value, -week) %>% 
   ggplot(aes(x = week, y = value)) +
   geom_col()+
@@ -63,12 +70,12 @@ lego2 %>%
 # --------------------------------------------------
 my_normalizer <- function(x) (x - min(x)) / (max(x) - min(x))
 
-lego2 <- lego2 %>% 
+sim_df <- sim_df %>% 
   mutate_at(vars(-week,-price), my_normalizer)
 
-lego2 %>% write_csv("lego2.csv")
+sim_df %>% write_csv("sim_df.csv")
 
-lego2 %>% 
+sim_df %>% 
   gather(key = vartype, value = value, -week) %>% 
   ggplot(aes(x = week, y = value)) +
   geom_col()+
@@ -221,7 +228,7 @@ bhill_df %>%
 #  gamma      0.05   
 #  e          normal(0,0.05^2)     
 #------------------------------------------------------------ 
-fat_data <- lego2 %>% 
+fat_data <- sim_df %>% 
   add_column(date = seq(as.Date("2017-01-01"), length.out = 104, by = "week")) %>%  
   # adstocks
   tq_mutate(select = media_tv, mutate_fun = rollapply, width = L, align = "right",
@@ -257,22 +264,12 @@ clean_data %>%
   ggplot(aes(date, sales)) + geom_line() + theme_ipsum()
 ```
 
-```{r}
-clean_data %>% 
-  gather(key = media_type, value = value, -date,-price,-sales,-e) %>% 
-  ggplot(aes(date, value, color = media_type)) + geom_line() + theme_ipsum()
-```
-
-```{r}
-clean_data %>% 
-  ggplot(aes(y = price, x = date)) + geom_line() + theme_ipsum()
-```
 
 
 ```{r}
 clean_data %>% 
   select(price, m_tv, m_rd, m_online) %>% 
-  cor()
+  correlate()
 ```
 
 ```{r}
