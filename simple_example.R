@@ -20,7 +20,7 @@ stan_data <- list(N=N, Y=Y, max_lag=max_lag, num_media=num_media,
                   lag_vec=lag_vec,X_media=X_media,
                   num_ctrl=num_ctrl,X_ctrl=X_ctrl)
 
-m.stan <- stan(file = "model.stan",data = stan_data, iter = 500, chains = 4)
+m.stan <- stan(file = "model.stan",data = stan_data, iter = 1000, chains = 1)
 
 summary(m.stan)
 

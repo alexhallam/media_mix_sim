@@ -45,15 +45,14 @@ sim_df %>%
 # Equation: y=ARIMA(1,1,0) with AR = 0.50
 # Interpretation: Price has increased by 3 dollars in the last year
 # -----------------------------------------------------------------------------
-price <- arima.sim(n = n, list(ar = c(0.8897, -0.4858), ma = c(0.279, 0.2488)), sd = sqrt(0.125))
+price <- arima.sim(n = n, list(ar = c(0.8897, -0.4858), ma = c(0.279, 0.2488)), sd = sqrt(0.001))
 mean(price)
 sd(price)
 hist(price)
 plot(price)
 
 #price <- as.numeric(scale(price))
-sim_df <- add_column(sim_df, price) %>% 
-  mutate_at(vars(price), percent_rank)
+sim_df <- add_column(sim_df, price) 
 
 sim_df %>% 
   gather(key = vartype, value = value, -week) %>% 
@@ -232,7 +231,7 @@ fat_data <- sim_df %>%
   add_column(date = seq(as.Date("2017-01-01"), length.out = 104, by = "week")) %>%  
   # adstocks
   tq_mutate(select = media_tv, mutate_fun = rollapply, width = L, align = "right",
-    FUN = delayed_decay,rate = 0.8, theta = 1,   
+    FUN = delayed_decay,rate = 0.6, theta = 1,   
     l = seq(from = 0 , to = L-1),col_rename = "adstk_tv"
   )%>% 
   tq_mutate(select = media_radio, mutate_fun = rollapply, width = L, align = "right",
@@ -245,11 +244,11 @@ fat_data <- sim_df %>%
   )%>% 
   # Shape
   mutate(m_tv = BHill(K = 0.2, S = 1, B = 0.8,adstk_tv)) %>% 
-  mutate(m_rd = BHill(K = 0.2, S = 1, B = 0.8,adstk_radio)) %>% 
-  mutate(m_online = BHill(K = 0.2, S = 1, B = 0.8,adstk_online)) %>% 
+  mutate(m_rd = BHill(K = 0.2, S = 1, B = 0.6,adstk_radio)) %>% 
+  mutate(m_online = BHill(K = 0.2, S = 1, B = 0.3,adstk_online)) %>% 
   #and errors
   mutate(e = rnorm(n = n(),mean = 0,sd = 0.05^2)) %>% 
-  mutate(sales = 4 + m_tv + m_rd + m_online + 0.05*price + e)
+  mutate(sales = 4 + m_tv + m_rd + m_online + .5*price + e)
 
 clean_data <- fat_data %>% 
   select(date, sales,m_tv,m_rd,m_online,price,e) %>% 
@@ -263,7 +262,6 @@ library(hrbrthemes)
 clean_data %>% 
   ggplot(aes(date, sales)) + geom_line() + theme_ipsum()
 ```
-
 
 
 ```{r}
@@ -294,7 +292,7 @@ Y <- clean_data$sales
 max_lag <- 13
 num_media <- 3
 lag_vec <- seq(0, max_lag - 1)
-X_media <- array(data = media_data, dim = c(3,13))
+X_media <- array(data = media_data, dim = c(num_media))
 num_ctrl <- 1
 X_ctrl <- clean_data$price
 
@@ -302,12 +300,94 @@ stan_data <- list(N=N, Y=Y, max_lag=max_lag, num_media=num_media,
                   lag_vec=lag_vec,X_media=X_media,
                   num_ctrl=num_ctrl,X_ctrl=X_ctrl)
 
-#stan_data %>% str
+stan_data %>% str
 ```
 
 ```{r}
 library(rstan)
-m.stan <- stan(file = "model.stan",data = stan_data, iter = 500, chains = 4)
+clean_data <- read_csv("clean_data.csv")
+media_data <- clean_data %>% select(contains("m_"))
+long_media_array <- c(clean_data$m_tv,clean_data$m_rd,clean_data$m_online)
+length(long_media_array)
+# data Prep
+N <- nrow(clean_data)
+Y <- clean_data$sales
+max_lag <- 13
+num_media <- 3
+lag_vec <- seq(0, max_lag - 1)
+X_media <- array(data = media_data, dim = c(3,13))
+X_media <- array(data = long_media_array, dim = c(92,3,13))
+num_ctrl <- 1
+X_ctrl <- clean_data %>% select(price) %>% as.vector()
+
+stan_data <- list(N=N, Y=Y, max_lag=max_lag, num_media=num_media,
+                  lag_vec=lag_vec,X_media=X_media,
+                  num_ctrl=num_ctrl,X_ctrl=X_ctrl)
+
+m.stan <- stan(file = "model.stan",data = stan_data, iter = 3000, chains = 1, control = list(max_treedepth = 15))
+
+#summary(m.stan)
 ```
 
+```{r}
+m.stan
+```
+
+```{r}
+rstan::get_posterior_mean(m.stan)
+list_of_draws <- extract(m.stan)
+
+predicted_sales <- summary(m.stan, pars = "mu", probs = NULL)$summary %>% 
+  as_tibble() %>% 
+  select(mean) %>% 
+  rename(pred_sales = mean)
+
+pred_and_sales <- predicted_sales %>% 
+  add_column(sales = clean_data$sales) %>% 
+  mutate(index = row_number())
+
+
+pred_and_sales %>% 
+  ggplot(aes(x = index)) +
+  geom_line(aes(y = sales), color = "black") +
+  geom_line(aes(y = pred_sales), color = "red")
+```
+
+
+
+```{r}
+#look at functions learned from model
+
+x <- seq(0,1, length.out = 100)
+
+tv_pred <- BHill(B = 1.20, K = 0.50, S = 2.23,x)
+rd_pred <- BHill(B = 0.95, K = 0.50, S = 2.45,x)
+online_pred <- BHill(B = 0.90, K = 0.50, S = 1.59,x)
+
+m_tv <- BHill(K = 0.2, S = 1, B = 0.8,x)
+m_rd <-  BHill(K = 0.2, S = 1, B = 0.6,x)
+m_online <-  BHill(K = 0.2, S = 1, B = 0.3,x)
+
+as_tibble(list(tv_actual = m_tv, tv_pred = tv_pred)) %>% 
+  mutate(index = row_number()) %>% 
+  ggplot(aes(x = index)) +
+  geom_line(aes(y = tv_actual, color = "actual")) +
+  geom_line(aes(y = tv_pred, color = "pred"))
+
+as_tibble(list(rd_actual = m_rd, rd_pred = rd_pred)) %>% 
+  mutate(index = row_number()) %>% 
+  ggplot(aes(x = index)) +
+  geom_line(aes(y = rd_actual, color = "actual")) +
+  geom_line(aes(y = rd_pred, color = "pred"))
+
+as_tibble(list(online_actual = m_online, online_pred = online_pred)) %>% 
+  mutate(index = row_number()) %>% 
+  ggplot(aes(x = index)) +
+  geom_line(aes(y = online_actual, color = "actual")) +
+  geom_line(aes(y = online_pred, color = "pred"))
+```
+
+```{r}
+rgamma(n = 100, shape = 2, scale = .25) %>% hist()
+```
 
