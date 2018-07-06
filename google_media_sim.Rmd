@@ -12,12 +12,12 @@ library(hrbrthemes)
 # Equation: y=a*sin(b*t)+c.unif*amp
 # -------------------------------------
 set.seed(1)
-n <- 104 # number of data points
-t <- seq(0,4*pi,length.out = n)
+n <- 52 * 2 # number of data points
+t <- seq(0, 4*pi, length.out = n)
 b <- 8 # essentially the number of pillars in a year
-c.norm1 <- rnorm(n,0,.5)
-c.norm2 <- rnorm(n,0,0.25)
-c.norm3 <- rnorm(n,0,0.25)
+c.norm1 <- rnorm(n,0,0.5)
+c.norm2 <- rnorm(n,0, 0.75)
+c.norm3 <- rnorm(n,0, 0.75)
 amp <- 2
 # generate data and calculate "y"
 media_tv <- 1*sin(b*t)+c.norm1*amp # Gaussian/normal error
@@ -228,7 +228,7 @@ bhill_df %>%
 #  e          normal(0,0.05^2)     
 #------------------------------------------------------------ 
 fat_data <- sim_df %>% 
-  add_column(date = seq(as.Date("2017-01-01"), length.out = 104, by = "week")) %>%  
+  add_column(date = seq(as.Date("2017-01-01"), length.out = n, by = "week")) %>%  
   # adstocks
   tq_mutate(select = media_tv, mutate_fun = rollapply, width = L, align = "right",
     FUN = delayed_decay,rate = 0.6, theta = 1,   
@@ -247,8 +247,8 @@ fat_data <- sim_df %>%
   mutate(m_rd = BHill(K = 0.2, S = 1, B = 0.6,adstk_radio)) %>% 
   mutate(m_online = BHill(K = 0.2, S = 1, B = 0.3,adstk_online)) %>% 
   #and errors
-  mutate(e = rnorm(n = n(),mean = 0,sd = 0.05^2)) %>% 
-  mutate(sales = 4 + m_tv + m_rd + m_online + .5*price + e)
+  mutate(e = rnorm(n = n(), mean = 0, sd = 0.25^2)) %>% 
+  mutate(sales = 4 + m_tv + m_rd + m_online + .5 * price + e)
 
 clean_data <- fat_data %>% 
   select(date, sales,m_tv,m_rd,m_online,price,e) %>% 
@@ -308,7 +308,6 @@ library(rstan)
 clean_data <- read_csv("clean_data.csv")
 media_data <- clean_data %>% select(contains("m_"))
 long_media_array <- c(clean_data$m_tv,clean_data$m_rd,clean_data$m_online)
-length(long_media_array)
 # data Prep
 N <- nrow(clean_data)
 Y <- clean_data$sales
