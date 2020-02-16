@@ -1,7 +1,15 @@
 ---
-title: "R Notebook"
-output: html_notebook
+output: github_document
 ---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 ```{r media data}
 library(tidyverse)
@@ -46,8 +54,7 @@ sim_df %>%
 # Interpretation: Price has increased by 3 dollars in the last year
 # -----------------------------------------------------------------------------
 price <- arima.sim(n = n, list(ar = c(0.8897, -0.4858), ma = c(0.279, 0.2488)), sd = sqrt(0.001))
-mean(price)
-sd(price)
+mean(price); sd(price)
 hist(price)
 plot(price)
 
